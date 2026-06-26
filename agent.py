@@ -6,35 +6,23 @@ import os
 
 load_dotenv()
 
-# Initialize Groq LLM
 llm = ChatGroq(
     api_key=os.getenv("GROQ_API_KEY"),
     model="llama-3.3-70b-versatile"
 )
 
 def calculate_confidence(results: list) -> float:
-    """
-    Calculates confidence score based on source relevance scores.
-    Returns a score between 0 and 1.
-    """
     if not results:
         return 0.0
-    
     scores = [r.get("score", 0) for r in results]
     avg_score = sum(scores) / len(scores)
     return round(avg_score, 2)
 
-def research(question: str) -> dict:
-    """
-    Main research function:
-    1. Searches the web
-    2. Synthesizes results with LLM
-    3. Returns answer + citations + confidence
-    """
+def research(question: str, num_sources: int = 5) -> dict:
     print(f"🔍 Searching for: {question}")
-    
+
     # Step 1 — Search the web
-    search_results = search_web(question)
+    search_results = search_web(question, num_sources)
     sources = search_results.get("results", [])
     quick_answer = search_results.get("answer", "")
 
@@ -65,7 +53,7 @@ Please provide:
 3. Any limitations or gaps in the available information""")
     ])
 
-    # Step 4 — Get synthesized answer from LLM
+    # Step 4 — Get synthesized answer
     chain = prompt | llm
     response = chain.invoke({
         "question": question,

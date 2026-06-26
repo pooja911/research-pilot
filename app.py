@@ -1,14 +1,12 @@
 import streamlit as st
 from agent import research
 
-# Page config
 st.set_page_config(
     page_title="AI Research Copilot",
     page_icon="🔬",
     layout="wide"
 )
 
-# Header
 st.title("🔬 AI Research Copilot")
 st.markdown("Ask any question — I'll search the web, synthesize answers, and cite my sources.")
 
@@ -18,12 +16,30 @@ question = st.text_input(
     placeholder="e.g. What are the latest developments in quantum computing?"
 )
 
+# Sources info and slider
+st.markdown("**How many sources do you want to search?** *(Tavily supports up to 20 sources)*")
+num_sources = st.slider(
+    "Number of sources:",
+    min_value=1,
+    max_value=20,
+    value=5,
+    help="1-5: Fast, focused answer | 6-10: Balanced | 11-20: Most comprehensive but slower"
+)
+
+# Show user what they selected
+if num_sources <= 5:
+    st.caption(f"🟢 {num_sources} sources selected — fast and focused")
+elif num_sources <= 10:
+    st.caption(f"🟡 {num_sources} sources selected — balanced coverage")
+else:
+    st.caption(f"🔴 {num_sources} sources selected — comprehensive but may be slower")
+
 search_button = st.button("🔍 Research", type="primary")
 
 if search_button and question:
     with st.spinner("Searching the web and synthesizing answer..."):
         try:
-            result = research(question)
+            result = research(question, num_sources)
 
             # Confidence score
             confidence = result["confidence"]
